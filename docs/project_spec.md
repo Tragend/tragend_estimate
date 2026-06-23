@@ -37,7 +37,7 @@ AI受託開発のリード獲得を最大化する「見積もりシミュレー
 1. **Theme Setup**: 
    - `globals.css` と `tailwind.config.ts` を設定し、`hodalab.com` のような淡い配色と角丸のベースを作成してください。
 2. **Estimation Component**:
-   - `miryo.ai` を参考に、ステップ遷移可能なカード選択コンポーネントを作成してください。
+   - `miryo.ai` を参考に、ステップ遷移可能なカード選択コンポーネントを作成してください。（https://www.miryo.ai/）
    - `framer-motion` で各ステップが横からスライドインするアニメーションを実装してください。
 3. **Portfolio Component**:
    - 実績一覧を `Grid` で表示し、ホバー時に微かに浮き上がる（`hover:-translate-y-1`）カードUIを作成してください。
