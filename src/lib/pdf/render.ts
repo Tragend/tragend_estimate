@@ -25,7 +25,7 @@ async function launchBrowser(): Promise<Browser> {
   if (isServerless()) {
     return puppeteer.launch({
       args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
+      // defaultViewport は @sparticuz/chromium v149 で廃止。PDF出力(A4 format指定)には不要。
       executablePath: await chromium.executablePath(),
       headless: true,
     });
