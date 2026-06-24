@@ -51,4 +51,9 @@ create table if not exists public.quotes (
 -- 閲覧は Supabase コンソール(service_role)で行う。
 alter table public.quotes enable row level security;
 
+-- Data API の「新規テーブル自動公開」を無効化しているため、サーバ書き込み用に
+-- service_role へ明示的に権限を付与する（anon / authenticated には付与しない＝公開はロックのまま）。
+grant usage on schema public to service_role;
+grant select, insert, update on table public.quotes to service_role;
+
 create index if not exists quotes_created_at_idx on public.quotes (created_at desc);

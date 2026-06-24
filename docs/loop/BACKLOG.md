@@ -23,6 +23,12 @@
 - [ ] #4 CI（GitHub Actions: test+lint+build）← GitHub化後。**着手時に既存 tsc エラー `src/lib/pdf/render.ts:28`（@sparticuz/chromium v149 で `defaultViewport` が型から消えた）を潰す＝フェーズBで対応**
 - [ ] #7 GitHub **private** repo ＋ `gh auth login`（ユーザーが `! gh auth login`）← public化は禁止・push手前で確認
 
+## インフラ状態
+
+- [x] **Supabase 構築**（Tragend Free / Tokyo）: `quotes`＋RLS＋service_role grant。保存パイプライン動作確認済（CLI保存OK・anon読取BLOCKED）。キーは `.env.local`（Git除外）。※「Automatically expose new tables」無効のため `schema.sql` で service_role へ明示 grant
+- [ ] **Vercel デプロイ**: GitHub `Tragend/tragend_estimate` main をインポート。⚠️ **Vercel側に環境変数を登録必須**（`ANTHROPIC_API_KEY` / `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY`。後で `RESEND_API_KEY`）。未登録だとAI=モック・保存スキップになる
+- [ ] **本番公開前に Supabase を Pro へ**（Free は7日停止・バックアップ無＝リード取りこぼしリスク）
+
 ## 残り開発フェーズ（1フェーズ＝1 Workflow・手動キック）
 
 > 各フェーズ着手時に受入基準を具体化する。既存 `src/lib/estimate/` 等の結線・実データ化が中心。
