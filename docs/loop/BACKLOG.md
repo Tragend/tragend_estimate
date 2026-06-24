@@ -27,7 +27,7 @@
 
 > 各フェーズ着手時に受入基準を具体化する。既存 `src/lib/estimate/` 等の結線・実データ化が中心。
 
-- [x] **フェーズA**：連絡先取得（生成後の動線を「完成→メール必須→お客様情報→サンクス」に差し替え、見積もり画面表示を撤去）。branch `phase-a-contact`。`page.tsx`／`actions.ts`(`submitEmail`/`submitCustomerInfo`)／`save.ts`(`updateQuoteEmail`/`updateQuoteCustomer`)＋`actions.test.ts`。クロスレビュー=go。`npm test` 20件緑・lint clean。**PR/コミットは人間ゲート②待ち（remote無＝#7後）**
+- [x] **フェーズA**：連絡先取得（生成後の動線を「完成→メール必須→お客様情報→サンクス」に差し替え、見積もり画面表示を撤去）。branch `phase-a-contact`。`page.tsx`／`actions.ts`(`submitEmail`/`submitCustomerInfo`)／`save.ts`(`updateQuoteEmail`/`updateQuoteCustomer`)＋`actions.test.ts`。クロスレビュー=go。`npm test` 20件緑・lint clean。ローカルコミット済 `8af4c8e`（branch `phase-a-contact`）。**push/PR は #7 GitHub化後**
 - [ ] **フェーズB**：PDF（見積書・構想書）に実データ接続。フェーズB着手前に潰すブロッカー:
   - [ ] **IDOR本対応**：`quoteId` をクライアント供給のまま service_role で更新している（`actions.ts`・`save.ts`）。署名トークン or セッションcookieで正当性検証。読み戻し経路ができる前に必須（クロスレビュー High）
   - [ ] `src/lib/pdf/render.ts:28` の `chromium.defaultViewport` 型エラー（v149 API変更）を実機検証しながら修正

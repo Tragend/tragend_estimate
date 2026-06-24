@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { WIZARD_STEPS, type WizardStep } from "@/lib/estimate/questions";
 import type { EstimateInput } from "@/lib/estimate/types";
 import { generateQuote, submitEmail, submitCustomerInfo } from "./actions";
@@ -31,11 +32,60 @@ export default function EstimatePage() {
   const [answers, setAnswers] = useState<Answers>({});
   const [quoteId, setQuoteId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+  const router = useRouter();
+  const bypassRef = useRef(false);
 
   const step = WIZARD_STEPS[stepIndex];
   const total = WIZARD_STEPS.length;
   const value = answers[step.key];
   const isIndividual = answers.businessType === "個人事業主";
+
+  // 入力途中（離脱すると内容が消える）状態か。サンクス到達後・生成中は対象外。
+  const dirty =
+    (phase === "wizard" && Object.keys(answers).length > 0) ||
+    phase === "completed" ||
+    phase === "contact";
+
+  // (A) ブラウザ離脱（閉じる / 更新 / 戻る）: ブラウザ標準の確認ダイアログ。
+  //     ※ 仕様上、文言はブラウザ依存でカスタム不可。
+  useEffect(() => {
+    if (!dirty) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      if (bypassRef.current) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [dirty]);
+
+  // (B) アプリ内リンク離脱（ヘッダー/フッターのリンク等）: 自前モーダルで確認。
+  useEffect(() => {
+    if (!dirty) return;
+    const handler = (e: MouseEvent) => {
+      // 修飾キー（新規タブ等）や既に処理済みは無視
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey)
+        return;
+      const anchor = (e.target as HTMLElement | null)?.closest("a");
+      if (!anchor) return;
+      const href = anchor.getAttribute("href");
+      // ページ内アンカー・新規タブ（離脱ではない）は許容
+      if (!href || href.startsWith("#") || anchor.target === "_blank") return;
+      e.preventDefault();
+      e.stopPropagation();
+      setPendingHref(href);
+    };
+    document.addEventListener("click", handler, true); // capture で Link より先に捕捉
+    return () => document.removeEventListener("click", handler, true);
+  }, [dirty]);
+
+  function leaveTo(href: string) {
+    bypassRef.current = true; // beforeunload の二重ダイアログを抑止
+    setPendingHref(null);
+    if (/^https?:\/\//.test(href)) window.location.href = href;
+    else router.push(href);
+  }
 
   const canProceed =
     step.type === "single"
@@ -84,106 +134,101 @@ export default function EstimatePage() {
     }
   }
 
+  let content: ReactNode;
   if (phase === "generating") {
-    return (
-      <Shell>
-        <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-primary" />
-          <p className="mt-6 text-lg font-semibold text-foreground">
-            お見積もりを作成しています…
+    content = (
+      <div className="flex flex-col items-center justify-center py-24 text-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-primary" />
+        <p className="mt-6 text-lg font-semibold text-foreground">
+          お見積もりを作成しています…
+        </p>
+        <p className="mt-1 text-sm text-muted-foreground">AIが要件を整理しています</p>
+      </div>
+    );
+  } else if (phase === "completed") {
+    content = <EmailGate quoteId={quoteId} onDone={() => setPhase("contact")} />;
+  } else if (phase === "contact") {
+    content = (
+      <ContactForm
+        quoteId={quoteId}
+        isIndividual={isIndividual}
+        onDone={() => setPhase("thanks")}
+      />
+    );
+  } else if (phase === "thanks") {
+    content = <ThanksView />;
+  } else {
+    content = (
+      <>
+        {/* progress */}
+        <div className="mb-8">
+          <p className="mb-2 text-center text-sm text-muted-foreground">
+            欲しいシステムの見積が1分で！
           </p>
-          <p className="mt-1 text-sm text-muted-foreground">AIが要件を整理しています</p>
+          <div className="h-1.5 overflow-hidden rounded-full bg-slate-200">
+            <div
+              className="h-full rounded-full bg-primary transition-all duration-500"
+              style={{ width: `${((stepIndex + 1) / total) * 100}%` }}
+            />
+          </div>
         </div>
-      </Shell>
-    );
-  }
 
-  if (phase === "completed") {
-    return (
-      <Shell>
-        <EmailGate quoteId={quoteId} onDone={() => setPhase("contact")} />
-      </Shell>
-    );
-  }
+        <h2 className="mb-6 text-xl font-bold text-foreground md:text-2xl">
+          {step.question}
+        </h2>
 
-  if (phase === "contact") {
-    return (
-      <Shell>
-        <ContactForm
-          quoteId={quoteId}
-          isIndividual={isIndividual}
-          onDone={() => setPhase("thanks")}
+        <StepBody
+          step={step}
+          value={value}
+          onSelectSingle={selectSingle}
+          onToggleMulti={toggleMulti}
+          onText={(v) => setAnswer(step.key, v)}
         />
-      </Shell>
-    );
-  }
 
-  if (phase === "thanks") {
-    return (
-      <Shell>
-        <ThanksView />
-      </Shell>
+        {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
+
+        {/* nav */}
+        <div className="mt-8 flex items-center justify-between">
+          <button
+            onClick={() => setStepIndex((i) => Math.max(0, i - 1))}
+            disabled={stepIndex === 0}
+            className="text-sm font-medium text-muted-foreground hover:text-foreground disabled:opacity-30"
+          >
+            ← 戻る
+          </button>
+          {step.type !== "single" && (
+            <div className="flex gap-3">
+              {step.type === "text" && step.optional && (
+                <button
+                  onClick={goNext}
+                  className="rounded-xl border border-border px-6 py-3 text-sm font-semibold text-foreground hover:border-primary"
+                >
+                  特になし
+                </button>
+              )}
+              <button
+                onClick={goNext}
+                disabled={!canProceed}
+                className="rounded-xl bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-40"
+              >
+                {stepIndex === total - 1 ? "見積もりを作成" : "次へ"}
+              </button>
+            </div>
+          )}
+        </div>
+      </>
     );
   }
 
   return (
     <Shell>
-      {/* progress */}
-      <div className="mb-8">
-        <p className="mb-2 text-center text-sm text-muted-foreground">
-          欲しいシステムの見積が1分で！
-        </p>
-        <div className="h-1.5 overflow-hidden rounded-full bg-slate-200">
-          <div
-            className="h-full rounded-full bg-primary transition-all duration-500"
-            style={{ width: `${((stepIndex + 1) / total) * 100}%` }}
-          />
-        </div>
-      </div>
-
-      <h2 className="mb-6 text-xl font-bold text-foreground md:text-2xl">
-        {step.question}
-      </h2>
-
-      <StepBody
-        step={step}
-        value={value}
-        onSelectSingle={selectSingle}
-        onToggleMulti={toggleMulti}
-        onText={(v) => setAnswer(step.key, v)}
-      />
-
-      {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
-
-      {/* nav */}
-      <div className="mt-8 flex items-center justify-between">
-        <button
-          onClick={() => setStepIndex((i) => Math.max(0, i - 1))}
-          disabled={stepIndex === 0}
-          className="text-sm font-medium text-muted-foreground hover:text-foreground disabled:opacity-30"
-        >
-          ← 戻る
-        </button>
-        {step.type !== "single" && (
-          <div className="flex gap-3">
-            {step.type === "text" && step.optional && (
-              <button
-                onClick={goNext}
-                className="rounded-xl border border-border px-6 py-3 text-sm font-semibold text-foreground hover:border-primary"
-              >
-                特になし
-              </button>
-            )}
-            <button
-              onClick={goNext}
-              disabled={!canProceed}
-              className="rounded-xl bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-40"
-            >
-              {stepIndex === total - 1 ? "見積もりを作成" : "次へ"}
-            </button>
-          </div>
-        )}
-      </div>
+      {content}
+      {pendingHref && (
+        <LeaveGuardModal
+          onStay={() => setPendingHref(null)}
+          onLeave={() => leaveTo(pendingHref)}
+        />
+      )}
     </Shell>
   );
 }
@@ -192,6 +237,34 @@ function Shell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-slate-50 px-6 py-16">
       <div className="mx-auto max-w-2xl">{children}</div>
+    </div>
+  );
+}
+
+/** アプリ内リンク離脱時の確認モーダル（カスタム文言） */
+function LeaveGuardModal({ onStay, onLeave }: { onStay: () => void; onLeave: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
+      <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+        <h3 className="text-lg font-bold text-foreground">このページを離れますか？</h3>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          ここまでの入力情報が消えてしまいます。
+        </p>
+        <div className="mt-6 flex gap-3">
+          <button
+            onClick={onStay}
+            className="flex-1 rounded-xl border border-border bg-white py-3 text-sm font-semibold text-foreground hover:border-primary"
+          >
+            とどまる
+          </button>
+          <button
+            onClick={onLeave}
+            className="flex-1 rounded-xl bg-red-600 py-3 text-sm font-semibold text-white hover:opacity-90"
+          >
+            離れる
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
