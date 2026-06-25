@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PhotoSlot } from "@/components/landing/PhotoSlot";
+import { SampleDocsShowcase } from "@/components/landing/SampleDocsShowcase";
 
 const MERITS = [
   {
@@ -111,8 +112,8 @@ export default function Home() {
             金額の見積もりだけでなく、ご要望を整理した「構想書（叩き台）」も一緒にお渡しします。
           </p>
           <div className="mt-12 grid items-center gap-10 md:grid-cols-2">
-            {/* 左: 見積書のサンプル */}
-            <PhotoSlot label="見積書のサンプル画像" aspect="3 / 4" />
+            {/* 左: 見積書・構想書のサンプル（実物レイアウト） */}
+            <SampleDocsShowcase />
             {/* 右: お客様のメリット */}
             <ul className="space-y-6">
               {MERITS.map((m) => (
