@@ -36,6 +36,8 @@ export async function saveQuote(
       features: quote.features,
       needs_hearing: requirement.needsHearing ?? false,
       source,
+      requirement, // AI出力まるごと（PDF再生成元）
+
       dev_man_days: quote.devManDays,
       total_excl_tax: quote.subtotal,
       total_incl_tax: quote.total,

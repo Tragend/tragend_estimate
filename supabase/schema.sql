@@ -24,6 +24,7 @@ create table if not exists public.quotes (
   features jsonb,
   needs_hearing boolean default false,
   source text,                          -- 'ai' | 'mock'
+  requirement jsonb,                    -- AI出力の構造化要件まるごと（PDF再生成元）
 
   -- 計算結果
   dev_man_days numeric,

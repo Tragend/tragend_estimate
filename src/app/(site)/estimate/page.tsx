@@ -156,7 +156,7 @@ export default function EstimatePage() {
       />
     );
   } else if (phase === "thanks") {
-    content = <ThanksView />;
+    content = <ThanksView quoteId={quoteId} />;
   } else {
     content = (
       <>
@@ -484,19 +484,45 @@ function ContactForm({
   );
 }
 
-function ThanksView() {
+function ThanksView({ quoteId }: { quoteId: string | null }) {
   return (
     <div className="py-8 text-center">
       <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl">
-        ✉
+        ✓
       </div>
       <h2 className="text-2xl font-bold text-foreground">ありがとうございました</h2>
       <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-muted-foreground">
-        ご入力いただいたメールアドレス宛に、概算のお見積書とプロジェクト構想書（叩き台）をお送りします。
-        数分経っても届かない場合は、迷惑メールフォルダもご確認ください。
+        下記より、概算のお見積書とプロジェクト構想書（叩き台）をダウンロードいただけます。
       </p>
-      <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
-        内容のご相談・日程調整は、メール本文のご案内よりお進みいただけます。
+
+      {quoteId ? (
+        <div className="mx-auto mt-8 flex max-w-md flex-col gap-3">
+          <a
+            href={`/download/quote/${quoteId}`}
+            download
+            className="rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground hover:opacity-90"
+          >
+            見積書（PDF）をダウンロード
+          </a>
+          <a
+            href={`/download/spec/${quoteId}`}
+            download
+            className="rounded-xl border border-border bg-white py-3 text-sm font-semibold text-foreground hover:border-primary"
+          >
+            プロジェクト構想書（PDF）をダウンロード
+          </a>
+          <p className="mt-1 text-xs text-muted-foreground">
+            ※ PDFの生成に数秒かかる場合があります。
+          </p>
+        </div>
+      ) : (
+        <p className="mx-auto mt-6 max-w-md text-sm leading-relaxed text-destructive">
+          ダウンロードの準備に失敗しました。お手数ですが、担当よりあらためてご連絡いたします。
+        </p>
+      )}
+
+      <p className="mx-auto mt-6 max-w-md text-xs leading-relaxed text-muted-foreground">
+        本お見積もりは概算です。内容のご相談・正式なお見積もりは、担当よりあらためてご案内いたします。
       </p>
     </div>
   );

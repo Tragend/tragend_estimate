@@ -34,14 +34,17 @@
 > 各フェーズ着手時に受入基準を具体化する。既存 `src/lib/estimate/` 等の結線・実データ化が中心。
 
 - [x] **フェーズA**：連絡先取得（生成後の動線を「完成→メール必須→お客様情報→サンクス」に差し替え、見積もり画面表示を撤去）。branch `phase-a-contact`。`page.tsx`／`actions.ts`(`submitEmail`/`submitCustomerInfo`)／`save.ts`(`updateQuoteEmail`/`updateQuoteCustomer`)＋`actions.test.ts`。クロスレビュー=go。`npm test` 20件緑・lint clean。ローカルコミット済 `8af4c8e`（branch `phase-a-contact`）。**push/PR は #7 GitHub化後**
-- [ ] **フェーズB**：PDF（見積書・構想書）に実データ接続。フェーズB着手前に潰すブロッカー:
-  - [ ] **IDOR本対応**：`quoteId` をクライアント供給のまま service_role で更新している（`actions.ts`・`save.ts`）。署名トークン or セッションcookieで正当性検証。読み戻し経路ができる前に必須（クロスレビュー High）
-  - [ ] `src/lib/pdf/render.ts:28` の `chromium.defaultViewport` 型エラー（v149 API変更）を実機検証しながら修正
-  - [ ] `schema.sql` の `deck_pdf_url` と SD §3.4 の `spec_pdf_url` の名称不一致を正本化
-  - [ ] 固定費がAI判定で項目数可変 → 見積書テンプレ `QuoteDocument.tsx` が可変行に対応しているか確認
-  - [ ] 保存/送付失敗時のフォールバック・可観測性（`actions.ts` の `.catch(()=>false)` サイレント欠損／SD §3.5）
-- [ ] **フェーズC**：Resend でメール送付（salesCc 社内控え・フォールバック・重複/レート制限）
-- [ ] **フェーズD**：結果画面 → サンクス画面に差し替え
+- [ ] **フェーズB（改）**：PDF実データ生成＋**ゲート付きダウンロード**（メール廃止・2026-06-25方針転換）
+  - [ ] 実データの印刷ルート（例 `/print/quote/[id]`・`/print/spec/[id]`）= `quotes` を service_role で取得して描画
+  - [ ] ダウンロード route handler（PDF を Content-Disposition で返す）。**連絡先(contact_name/agreed_terms)が入っている行のみ許可**＝ゲート＆IDOR緩和
+  - [ ] サンクス画面に「見積書PDF」「構想書PDF」DLボタン（旧フェーズD統合）
+  - [ ] **PDF描画に必要な保存項目の確認/追加**：現状 `save.ts` は features/totals のみ。固定費内訳・assumptions 等が要るなら `schema`/`save` に追加（or quote+requirement を jsonb 保存）
+  - [x] ~~`render.ts` の `chromium.defaultViewport` 型エラー~~ → 修正済（`edc010e`・ビルド回復）
+  - [ ] `schema.sql` の `deck_pdf_url`↔ SD `spec_pdf_url` 名称不一致を正本化
+  - [ ] 固定費がAI判定で項目数可変 → `QuoteDocument.tsx` が可変行対応か確認
+  - [ ] RD §2/§3・SD §2/§3.5 を「メール送付」→「ゲート付きDL」に更新
+- [ ] ~~フェーズC：Resendメール送付~~ → **廃止**（将来オプション：Storage保存＋DLリンクの軽量メール）
+- [ ] **デプロイ前 横断**：IDOR本対応（`quoteId`クライアント供給／クロスレビューHigh）。DLゲートで一部緩和されるが、署名トークン/cookieでの正当性検証を検討
 
 ## いつかやる（将来マイルストーン・会社資産化の一部）
 
