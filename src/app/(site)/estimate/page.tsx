@@ -357,8 +357,8 @@ function EmailGate({
       </div>
       <h2 className="text-2xl font-bold text-foreground">お見積もりが完成しました！</h2>
       <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
-        概算のお見積書とプロジェクト構想書（叩き台）を、メールにてお送りします。
-        受け取るメールアドレスをご入力ください。
+        この後、概算のお見積書とプロジェクト構想書（叩き台）をダウンロードいただけます。
+        まず、ご連絡先のメールアドレスをご入力ください。
       </p>
 
       <div className="mx-auto mt-8 max-w-md text-left">
@@ -424,7 +424,7 @@ function ContactForm({
     <div>
       <h2 className="text-2xl font-bold text-foreground">お客様情報のご入力</h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        担当者より、メールにて成果物をお送りします。
+        ご入力後、お見積書とプロジェクト構想書（叩き台）をダウンロードいただけます。
       </p>
 
       <div className="mt-8 space-y-5">
@@ -485,8 +485,43 @@ function ContactForm({
 }
 
 function ThanksView({ quoteId }: { quoteId: string | null }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function download(kind: "quote" | "spec") {
+    if (!quoteId || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(`/download/${kind}/${quoteId}`);
+      if (!res.ok) throw new Error(String(res.status));
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = kind === "quote" ? "見積書.pdf" : "プロジェクト構想書.pdf";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      setError("ダウンロードに失敗しました。時間をおいて再度お試しください。");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <div className="py-8 text-center">
+      {/* 生成中オーバーレイ（画面全体を覆い操作不可にする） */}
+      {busy && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-primary" />
+          <p className="mt-4 text-sm font-semibold text-foreground">PDFを生成しています…</p>
+          <p className="mt-1 text-xs text-muted-foreground">数秒かかる場合があります。そのままお待ちください</p>
+        </div>
+      )}
+
       <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl">
         ✓
       </div>
@@ -497,23 +532,21 @@ function ThanksView({ quoteId }: { quoteId: string | null }) {
 
       {quoteId ? (
         <div className="mx-auto mt-8 flex max-w-md flex-col gap-3">
-          <a
-            href={`/download/quote/${quoteId}`}
-            download
-            className="rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground hover:opacity-90"
+          <button
+            onClick={() => download("quote")}
+            disabled={busy}
+            className="rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-50"
           >
             見積書（PDF）をダウンロード
-          </a>
-          <a
-            href={`/download/spec/${quoteId}`}
-            download
-            className="rounded-xl border border-border bg-white py-3 text-sm font-semibold text-foreground hover:border-primary"
+          </button>
+          <button
+            onClick={() => download("spec")}
+            disabled={busy}
+            className="rounded-xl border border-border bg-white py-3 text-sm font-semibold text-foreground hover:border-primary disabled:opacity-50"
           >
             プロジェクト構想書（PDF）をダウンロード
-          </a>
-          <p className="mt-1 text-xs text-muted-foreground">
-            ※ PDFの生成に数秒かかる場合があります。
-          </p>
+          </button>
+          {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
       ) : (
         <p className="mx-auto mt-6 max-w-md text-sm leading-relaxed text-destructive">
