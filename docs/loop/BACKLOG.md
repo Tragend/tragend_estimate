@@ -34,15 +34,16 @@
 > 各フェーズ着手時に受入基準を具体化する。既存 `src/lib/estimate/` 等の結線・実データ化が中心。
 
 - [x] **フェーズA**：連絡先取得（生成後の動線を「完成→メール必須→お客様情報→サンクス」に差し替え、見積もり画面表示を撤去）。branch `phase-a-contact`。`page.tsx`／`actions.ts`(`submitEmail`/`submitCustomerInfo`)／`save.ts`(`updateQuoteEmail`/`updateQuoteCustomer`)＋`actions.test.ts`。クロスレビュー=go。`npm test` 20件緑・lint clean。ローカルコミット済 `8af4c8e`（branch `phase-a-contact`）。**push/PR は #7 GitHub化後**
-- [ ] **フェーズB（改）**：PDF実データ生成＋**ゲート付きダウンロード**（メール廃止・2026-06-25方針転換）
-  - [ ] 実データの印刷ルート（例 `/print/quote/[id]`・`/print/spec/[id]`）= `quotes` を service_role で取得して描画
-  - [ ] ダウンロード route handler（PDF を Content-Disposition で返す）。**連絡先(contact_name/agreed_terms)が入っている行のみ許可**＝ゲート＆IDOR緩和
-  - [ ] サンクス画面に「見積書PDF」「構想書PDF」DLボタン（旧フェーズD統合）
-  - [ ] **PDF描画に必要な保存項目の確認/追加**：現状 `save.ts` は features/totals のみ。固定費内訳・assumptions 等が要るなら `schema`/`save` に追加（or quote+requirement を jsonb 保存）
-  - [x] ~~`render.ts` の `chromium.defaultViewport` 型エラー~~ → 修正済（`edc010e`・ビルド回復）
-  - [ ] `schema.sql` の `deck_pdf_url`↔ SD `spec_pdf_url` 名称不一致を正本化
-  - [ ] 固定費がAI判定で項目数可変 → `QuoteDocument.tsx` が可変行対応か確認
-  - [ ] RD §2/§3・SD §2/§3.5 を「メール送付」→「ゲート付きDL」に更新
+- [x] **フェーズB（改）**：PDF実データ生成＋**ゲート付きダウンロード**（メール廃止・2026-06-25）→ `85e4177`。E2E検証済（200/403/404）
+  - [x] 実データ印刷ルート `/print/quote|spec/[id]`（service_role取得・hasContactゲート）
+  - [x] ダウンロードAPI `/download/quote|spec/[id]`（ゲート＋PDF生成＋try/catch失敗整形）
+  - [x] サンクス画面にDLボタン（メール文言撤去）
+  - [x] `requirement(jsonb)` 保存で PDF 再生成。`isContactComplete`/`isRenderableRequirement` を純関数化＋テスト
+  - [x] ~~`render.ts` `defaultViewport`~~ 修正済（`edc010e`）
+  - 残課題（フェーズB範囲だが未了・低〜中）:
+    - [ ] `schema.sql` `deck_pdf_url`↔SD `spec_pdf_url` 名称不一致の正本化（未使用列・Low）
+    - [ ] 固定費可変行で `QuoteDocument.tsx` の表示確認（実データで目視）
+    - [ ] RD §2/§3・SD §2/§3.5 を「メール送付」→「ゲート付きDL」に更新（doc整合）
 - [ ] ~~フェーズC：Resendメール送付~~ → **廃止**（将来オプション：Storage保存＋DLリンクの軽量メール）
 - [ ] **デプロイ前 横断**：IDOR本対応（`quoteId`クライアント供給／クロスレビューHigh）。DLゲートで一部緩和されるが、署名トークン/cookieでの正当性検証を検討
 
