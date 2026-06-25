@@ -85,6 +85,19 @@ export default function Home() {
               今すぐ見積もり
               <span>→</span>
             </Link>
+
+            <p className="mt-4 text-xs text-muted-foreground">
+              ホームページ・LP制作のご相談は{" "}
+              <a
+                href={`${COMPANY.url}/contact`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-primary underline"
+              >
+                弊社ホームページのお問い合わせ
+              </a>
+              から。
+            </p>
           </div>
 
           {/* 右: ヒーロー画像（背後のソフトな円＋影で接地させる） */}
@@ -181,14 +194,14 @@ export default function Home() {
             <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
               本シミュレーターはシステム開発向けです。ホームページ・LP制作のご相談は、
               <a
-                href={COMPANY.url}
+                href={`${COMPANY.url}/contact`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-semibold text-primary underline"
               >
-                コーポレートサイト
+                弊社ホームページのお問い合わせ
               </a>
-              より直接お問い合わせください。
+              より直接ご連絡ください。
             </p>
           </div>
         </div>
