@@ -42,18 +42,11 @@ export function SampleDocsShowcase() {
   const quote = priceEstimate(SAMPLE_REQUIREMENT);
   return (
     <div className="relative mx-auto h-[400px] w-full max-w-[360px]">
-      <span className="absolute -top-2 left-1/2 z-20 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground shadow">
-        サンプル
-      </span>
-
       {/* 背面：プロジェクト構想書 */}
       <div className="absolute left-0 top-9 -rotate-3">
         <DocThumb className="shadow-lg">
           <SpecDocument requirement={SAMPLE_REQUIREMENT} meta={SAMPLE_META} />
         </DocThumb>
-        <p className="mt-2 text-center text-xs font-semibold text-muted-foreground">
-          プロジェクト構想書
-        </p>
       </div>
 
       {/* 前面：見積書 */}
@@ -61,7 +54,6 @@ export function SampleDocsShowcase() {
         <DocThumb className="shadow-2xl">
           <QuoteDocument requirement={SAMPLE_REQUIREMENT} quote={quote} meta={SAMPLE_META} />
         </DocThumb>
-        <p className="mt-2 text-center text-xs font-semibold text-primary">見積書</p>
       </div>
     </div>
   );
