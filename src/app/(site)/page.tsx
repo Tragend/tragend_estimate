@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PhotoSlot } from "@/components/landing/PhotoSlot";
 import { SampleDocsShowcase } from "@/components/landing/SampleDocsShowcase";
+import { COMPANY } from "@/lib/estimate/company";
 
 const MERITS = [
   {
@@ -22,10 +23,10 @@ const MERITS = [
 ];
 
 const DOMAINS = [
-  { title: "会員管理システム", price: "30万円〜", term: "2週間〜" },
-  { title: "予約・受付システム", price: "30万円〜", term: "2週間〜" },
-  { title: "業務効率化ツール", price: "20万円〜", term: "1週間〜" },
-  { title: "AIチャット・自動化", price: "50万円〜", term: "3週間〜" },
+  { title: "レジャー施設のイベント予約サイト", price: "180万円〜", term: "約3ヶ月" },
+  { title: "小規模企業の社内勤怠管理システム", price: "150万円〜", term: "2〜3ヶ月" },
+  { title: "製造業向け図面管理システム", price: "200万円〜", term: "約3ヶ月" },
+  { title: "ECサイト・在庫管理システム", price: "300万円〜", term: "約6ヶ月" },
 ];
 
 const WHY = [
@@ -166,6 +167,29 @@ export default function Home() {
                 </div>
               </div>
             ))}
+          </div>
+
+          <p className="mt-8 text-center text-xs text-muted-foreground">
+            ※ 金額・期間は目安です。ご要望の内容により変動します。
+          </p>
+
+          {/* ホームページ・LP制作は本シミュレーター対象外 → 自社サイトへ誘導 */}
+          <div className="mx-auto mt-8 max-w-2xl rounded-2xl border border-border bg-white p-5 text-center">
+            <p className="text-sm font-semibold text-foreground">
+              ホームページ・ランディングページ制作をご検討の方へ
+            </p>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+              本シミュレーターはシステム開発向けです。ホームページ・LP制作のご相談は、
+              <a
+                href={COMPANY.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-primary underline"
+              >
+                コーポレートサイト
+              </a>
+              より直接お問い合わせください。
+            </p>
           </div>
         </div>
       </section>
