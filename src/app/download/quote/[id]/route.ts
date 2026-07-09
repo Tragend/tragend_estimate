@@ -27,10 +27,8 @@ export async function GET(
     });
   } catch (e) {
     console.error("[download/quote] PDF生成失敗:", e instanceof Error ? e.message : e);
-    // [一時デバッグ] 原因特定のため詳細を返す。診断後に汎用メッセージへ戻す。
-    return new Response(
-      "PDF生成失敗: " + (e instanceof Error ? `${e.message}\n${e.stack ?? ""}` : String(e)),
-      { status: 500 }
-    );
+    return new Response("PDFの生成に失敗しました。時間をおいて再度お試しください。", {
+      status: 500,
+    });
   }
 }
