@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { PhotoSlot } from "@/components/landing/PhotoSlot";
 import { SampleDocsShowcase } from "@/components/landing/SampleDocsShowcase";
 import { COMPANY } from "@/lib/estimate/company";
 
@@ -23,28 +22,32 @@ const MERITS = [
 ];
 
 const DOMAINS = [
-  { title: "レジャー施設のイベント予約サイト", price: "180万円〜", term: "約3ヶ月" },
-  { title: "小規模企業の社内勤怠管理システム", price: "150万円〜", term: "2〜3ヶ月" },
-  { title: "製造業向け図面管理システム", price: "200万円〜", term: "約3ヶ月" },
-  { title: "ECサイト・在庫管理システム", price: "300万円〜", term: "約6ヶ月" },
+  { title: "レジャー施設のイベント予約サイト", price: "180万円〜", term: "約3ヶ月", image: "/domain-leisure.png" },
+  { title: "小規模企業の社内勤怠管理システム", price: "150万円〜", term: "2〜3ヶ月", image: "/domain-attendance.png" },
+  { title: "製造業向け図面管理システム", price: "200万円〜", term: "約3ヶ月", image: "/domain-drawing.png" },
+  { title: "ECサイト・在庫管理システム", price: "300万円〜", term: "約6ヶ月", image: "/domain-ec.png" },
 ];
 
 const WHY = [
   {
     title: "AI駆動な開発体制",
     desc: "開発フローの各工程にAIを取り入れ、人は要件ヒアリングと品質レビューに集中。",
+    icon: "/why-ai.png",
   },
   {
     title: "品質とセキュリティを担保",
     desc: "現役エンジニアが徹底レビューし、AI生成コードの信頼性を確保。",
+    icon: "/why-quality.png",
   },
   {
     title: "代表がフロントに立つ",
     desc: "ご相談から運用まで代表が伴走。意思決定が速く、認識のズレを防ぐ。",
+    icon: "/why-founder.png",
   },
   {
     title: "わかる言葉で小さく試す",
     desc: "専門用語に頼らず、現場の困りごとから段階的に形にする。",
+    icon: "/why-small.png",
   },
 ];
 
@@ -166,7 +169,12 @@ export default function Home() {
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {DOMAINS.map((d) => (
               <div key={d.title} className="rounded-2xl border border-border bg-white p-4">
-                <PhotoSlot label="サービス画像" aspect="4 / 3" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={d.image}
+                  alt={d.title}
+                  className="aspect-[4/3] w-full rounded-xl object-cover"
+                />
                 <div className="px-1 pt-4">
                   <h3 className="font-bold text-foreground">{d.title}</h3>
                   <div className="mt-3 space-y-1 text-sm">
@@ -222,7 +230,12 @@ export default function Home() {
                 key={w.title}
                 className="flex gap-4 rounded-2xl border border-border bg-white p-6"
               >
-                <PhotoSlot label="図" aspect="1 / 1" className="w-16 shrink-0" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={w.icon}
+                  alt=""
+                  className="h-16 w-16 shrink-0 rounded-xl object-contain"
+                />
                 <div>
                   <h3 className="font-bold text-foreground">{w.title}</h3>
                   <p className="mt-1 text-sm text-muted-foreground">{w.desc}</p>
