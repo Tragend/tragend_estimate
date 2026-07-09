@@ -64,16 +64,16 @@ export default function Home() {
               1分で見積もりをお渡し！
             </span>
             <h1 className="mt-6 flex flex-col gap-3 font-bold tracking-tight text-foreground">
-              <span className="text-3xl md:text-4xl">
+              <span className="text-2xl sm:text-3xl md:text-4xl">
                 相場の約<span className="text-primary">1/3</span>の金額で、
               </span>
-              <span className="text-3xl md:text-4xl">貴社だけのシステムを</span>
-              <span className="text-3xl md:text-4xl">
-                <span className="inline-block whitespace-nowrap border-b-4 border-primary/40 pb-1 font-black text-primary">
+              <span className="text-2xl sm:text-3xl md:text-4xl">貴社だけのシステムを</span>
+              <span className="text-2xl sm:text-3xl md:text-4xl">
+                <span className="inline-block border-b-4 border-primary/40 pb-1 font-black text-primary">
                   高速・高品質・高セキュリティ
                 </span>
               </span>
-              <span className="text-3xl md:text-4xl">で構築します。</span>
+              <span className="text-2xl sm:text-3xl md:text-4xl">で構築します。</span>
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
               最新AIを活用した現役エンジニアが、高品質なシステムを開発します。

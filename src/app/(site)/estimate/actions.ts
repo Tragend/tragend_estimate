@@ -8,6 +8,8 @@ import {
   updateQuoteCustomer,
   type CustomerInfo,
 } from "@/lib/estimate/save";
+import { getServerSupabase } from "@/lib/supabase/server";
+import { notifyNewLead } from "@/lib/notify/slack";
 import type { EstimateInput, EstimateRequirement } from "@/lib/estimate/types";
 
 export async function generateQuote(input: EstimateInput): Promise<{
@@ -68,6 +70,29 @@ export async function submitCustomerInfo(
       phone: info.phone.trim(),
       agreedTerms: info.agreedTerms,
     }).catch(() => false);
+
+    // Slack へ新規リード通知（非ブロッキング。失敗しても顧客フローは止めない）
+    try {
+      const supabase = getServerSupabase();
+      const { data } = supabase
+        ? await supabase
+            .from("quotes")
+            .select("email, project_title, total_incl_tax")
+            .eq("id", quoteId)
+            .single()
+        : { data: null };
+      await notifyNewLead({
+        quoteId,
+        companyName: info.companyName?.trim() || undefined,
+        contactName: info.contactName.trim(),
+        email: data?.email ?? null,
+        phone: info.phone.trim(),
+        projectTitle: data?.project_title ?? null,
+        totalInclTax: data?.total_incl_tax ?? null,
+      });
+    } catch {
+      // 通知失敗は無視
+    }
   }
   return { ok: true };
 }
