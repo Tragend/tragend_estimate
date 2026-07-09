@@ -1,17 +1,13 @@
-// HTML（Next の印刷用ルート）→ PDF 変換。
-// ローカル(mac/win)はインストール済み Chrome を使い、本番(Vercel/Linux)は
-// @sparticuz/chromium のバンドル Chromium を使う（同一コードパス）。
+// HTML（Next の印刷用ルート）→ PDF 変換。ホスティング非依存。
+//  - 本番(NODE_ENV=production／Linuxコンテナ全般: Firebase App Hosting・Cloud Run・Vercel・Lambda 等)
+//    → @sparticuz/chromium のバンドル Chromium
+//  - ローカル開発(mac/win) → インストール済み Chrome
+//  - CHROME_EXECUTABLE_PATH があれば常に優先（任意のホストで上書き可）
 import puppeteer, { type Browser } from "puppeteer-core";
 import chromium from "@sparticuz/chromium";
 
-/** サーバーレス環境かどうか（Vercel / Lambda） */
-function isServerless(): boolean {
-  return !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
-}
-
-/** ローカル Chrome の実行パス（環境変数優先、無ければ OS 既定） */
+/** ローカル Chrome の実行パス（OS 既定） */
 function localChromePath(): string {
-  if (process.env.CHROME_EXECUTABLE_PATH) return process.env.CHROME_EXECUTABLE_PATH;
   if (process.platform === "darwin") {
     return "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
   }
@@ -22,16 +18,17 @@ function localChromePath(): string {
 }
 
 async function launchBrowser(): Promise<Browser> {
-  if (isServerless()) {
+  const override = process.env.CHROME_EXECUTABLE_PATH;
+  // 本番かつ上書き無し → バンドル Chromium（ホスト非依存）。それ以外はローカル/上書きパス。
+  if (process.env.NODE_ENV === "production" && !override) {
     return puppeteer.launch({
       args: chromium.args,
-      // defaultViewport は @sparticuz/chromium v149 で廃止。PDF出力(A4 format指定)には不要。
       executablePath: await chromium.executablePath(),
       headless: true,
     });
   }
   return puppeteer.launch({
-    executablePath: localChromePath(),
+    executablePath: override ?? localChromePath(),
     headless: true,
     args: ["--no-sandbox"],
   });

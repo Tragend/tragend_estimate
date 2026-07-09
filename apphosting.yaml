@@ -1,0 +1,33 @@
+# Firebase App Hosting 設定（Cloud Run 上で Next.js SSR を実行）
+# https://firebase.google.com/docs/app-hosting/configure
+
+runConfig:
+  cpu: 1
+  memoryMiB: 2048 # PDF生成(@sparticuz/chromium)に十分なメモリを確保
+  maxInstances: 5
+  minInstances: 0
+  concurrency: 40
+
+# 環境変数。値は Secret Manager に保存し、ここでは参照のみ（リポジトリに値を置かない）。
+# 事前に `firebase apphosting:secrets:set <NAME>` で各シークレットを作成・アクセス付与すること。
+env:
+  # 公開値（クライアントに埋め込まれる）→ ビルド時と実行時の両方で必要
+  - variable: NEXT_PUBLIC_SUPABASE_URL
+    secret: NEXT_PUBLIC_SUPABASE_URL
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_SUPABASE_ANON_KEY
+    secret: NEXT_PUBLIC_SUPABASE_ANON_KEY
+    availability:
+      - BUILD
+      - RUNTIME
+  # サーバ専用シークレット（実行時のみ・クライアントに出さない）
+  - variable: ANTHROPIC_API_KEY
+    secret: ANTHROPIC_API_KEY
+    availability:
+      - RUNTIME
+  - variable: SUPABASE_SERVICE_ROLE_KEY
+    secret: SUPABASE_SERVICE_ROLE_KEY
+    availability:
+      - RUNTIME
