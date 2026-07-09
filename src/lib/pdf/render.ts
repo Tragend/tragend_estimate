@@ -1,10 +1,15 @@
-// HTML（Next の印刷用ルート）→ PDF 変換。ホスティング非依存。
-//  - 本番(NODE_ENV=production／Linuxコンテナ全般: Firebase App Hosting・Cloud Run・Vercel・Lambda 等)
-//    → @sparticuz/chromium のバンドル Chromium
+// HTML（Next の印刷用ルート）→ PDF 変換。ホスティング/バンドラ非依存。
+//  - 本番(NODE_ENV=production) → Chromium を GitHub リリースの pack から実行時取得
+//    （@sparticuz/chromium-min。Turbopack等がバイナリを同梱できない問題を回避）
 //  - ローカル開発(mac/win) → インストール済み Chrome
 //  - CHROME_EXECUTABLE_PATH があれば常に優先（任意のホストで上書き可）
 import puppeteer, { type Browser } from "puppeteer-core";
-import chromium from "@sparticuz/chromium";
+import chromium from "@sparticuz/chromium-min";
+
+// 実行時に取得する Chromium パック（バージョンは @sparticuz/chromium-min と一致必須）。
+const CHROMIUM_PACK_URL =
+  process.env.CHROMIUM_PACK_URL ??
+  "https://github.com/Sparticuz/chromium/releases/download/v149.0.0/chromium-v149.0.0-pack.x64.tar";
 
 /** ローカル Chrome の実行パス（OS 既定） */
 function localChromePath(): string {
@@ -23,7 +28,7 @@ async function launchBrowser(): Promise<Browser> {
   if (process.env.NODE_ENV === "production" && !override) {
     return puppeteer.launch({
       args: chromium.args,
-      executablePath: await chromium.executablePath(),
+      executablePath: await chromium.executablePath(CHROMIUM_PACK_URL),
       headless: true,
     });
   }
